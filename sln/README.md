@@ -13,8 +13,7 @@ This lab includes instructions for the following tasks:
 * [Setting up the ASP.NET MVC application](#setting-up-the-aspnet-mvc-app)
 * [Wiring up DocumentDB](#wiring-up-documentdb)
 * [Running the application locally](#running-the-application-locally)
-* [Deploying the application to Azure Websites](#deploying-the-app-to-azure)
-* [Appendix - Cleanup](#cleanup)
+
 
 <a name="creating-a-documentdb-database-account"></a>
 ## Creating a DocumentDB database account
@@ -498,7 +497,6 @@ In this task you will add code in the **ItemController** class to handle the fol
 
 1. Open the **RouteConfig.cs** file under **App_Start** and locate the line starting with **defaults:**. Update it to resemble the one below:
 
-    <!-- mark:8 -->
     ```C#
     public static void RegisterRoutes(RouteCollection routes)
     {
@@ -715,18 +713,18 @@ The code changes that allow viewing details of Items are even fewer than those m
 
 1. Open **ItemController.cs** and add the following code:
 
-    ```C#
+ ```C#
   public ActionResult Details(string id)
   {
         var item = DocumentDBRepository.GetItem(id);
         return this.View(item);
   }
-    ```
+ ```
 
 You have finished adding all the necessary code for the application to work. In the next section you will test the application locally.
 
 <a name="running-the-application-locally"></a>
-##Running the application locally
+## Running the application locally
 
 In this task you will verify that the application you built in the previous task is working as expected.
 
