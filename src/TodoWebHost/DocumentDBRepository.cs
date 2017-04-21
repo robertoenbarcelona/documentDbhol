@@ -10,6 +10,8 @@ namespace Todo
     using Microsoft.Azure.Documents.Client;
     using Microsoft.Azure.Documents.Linq;
     using Models;
+    using Newtonsoft.Json.Linq;
+    using System.Net;
 
     public static class DocumentDBRepository
     {
@@ -126,6 +128,35 @@ namespace Todo
         {
             Document doc = GetDocument(id);
             await Client.DeleteDocumentAsync(doc.SelfLink);
+        }
+
+        public static async Task<Item> UpdateItemConcurrencyAsync(Item item)
+        {
+            dynamic json = JObject.FromObject(item);
+            json.TimeStamp = "fake";
+
+            // Using Access Conditions gives us the ability to use the ETag from our fetched document for optimistic concurrency.
+            var ac = new AccessCondition { Condition = json.TimeStamp, Type = AccessConditionType.IfMatch };
+            try
+            {
+
+                Document document = await Client.ReplaceDocumentAsync(
+                            UriFactory.CreateDocumentUri(DatabaseId, CollectionId, item.Id),
+                            json,
+                            new RequestOptions { AccessCondition = ac })
+                            .ConfigureAwait(false);
+
+                var entity = (Item)(dynamic)document;
+                entity.Description = document.ETag;
+                return entity;
+            }
+            catch (DocumentClientException e)
+            {
+                if (e.StatusCode == HttpStatusCode.PreconditionFailed)
+                { throw new Exception($"Updating entity with {item.Id} result in conflict"); }
+
+                throw;
+            }
         }
 
         private static DocumentCollection ReadOrCreateCollection(string databaseLink)
